@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panthoron · Batch traceability for food plants</title>
+<meta name="description" content="Panthoron records every batch on your production floor as it is made. Trace any batch back to the milk and forward to the customer in one tap.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1D2328; --text:#22292F; --muted:#5D666E;
+  --white:#FFFFFF; --mist:#ECEFF1; --mist-2:#DDE2E5; --rule:#D5DADE;
+  --ok:#1E8A4C; --ok-bg:#DFF1E6; --alarm:#C25E00; --alarm-bg:#FBE6D0;
+  --max:1180px; --gutter:clamp(16px,4vw,40px); --r:14px;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{margin:0;background:var(--white);color:var(--text);font:400 17px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--ok);outline-offset:3px;border-radius:6px}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
+h1,h2,h3{margin:0;color:var(--navy);font-weight:650;letter-spacing:-.02em;line-height:1.12}
+p{margin:0}
+.muted{color:var(--muted)}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:66px;gap:16px}
+.top img{height:32px;width:auto}
+.top nav{display:flex;align-items:center;gap:26px;font-size:15px;font-weight:500}
+.top nav a{text-decoration:none;color:var(--muted)}
+.top nav a:hover{color:var(--navy)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:10px;font:600 16px/1 Inter,sans-serif;text-decoration:none;border:2px solid var(--navy);cursor:pointer}
+.btn.primary{background:#1D2328;color:#FFFFFF;border-color:#1D2328}
+.btn.primary:hover{background:#17375A}
+.btn.line{background:transparent;color:var(--navy)}
+.btn.line:hover{background:var(--mist)}
+.top .btn{min-height:40px;padding:0 16px;font-size:15px}
+.top nav .btn{color:#FFFFFF}
+@media (max-width:820px){.top nav a:not(.btn){display:none}}
+
+/* layout: content + sticky label column on desktop */
+.page{padding-bottom:56px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:clamp(32px,4vw,64px);align-items:start}
+.label-col{position:sticky;top:96px;padding-top:56px}
+@media (max-width:980px){.page{grid-template-columns:1fr}.label-col{display:none}}
+
+/* the batch label: the one memorable element */
+.label{background:var(--white);border:1.5px solid var(--navy);border-radius:10px;padding:18px 18px 16px;font-family:var(--mono);color:var(--navy);box-shadow:6px 6px 0 #C8F031}
+.label-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1.5px dashed var(--rule);padding-bottom:14px}
+.label-top .lot{font-size:15px;font-weight:600;letter-spacing:.02em}
+.label-top .prod{font-family:Inter,sans-serif;font-size:13.5px;color:var(--muted);margin-top:4px}
+.label-top img{width:68px;height:68px;image-rendering:pixelated}
+.fields{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:2px}
+.fields li{display:grid;grid-template-columns:18px 1fr auto;gap:10px;align-items:center;padding:7px 0;font-size:13px;border-bottom:1px solid var(--mist)}
+.fields li:last-child{border-bottom:0}
+.fields .k{font-family:Inter,sans-serif;font-size:13.5px;color:var(--muted)}
+.fields .v{font-weight:600;opacity:0;transform:translateX(4px);transition:opacity .4s,transform .4s}
+.fields .tick{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--rule);transition:background .3s,border-color .3s}
+.fields li.on .v{opacity:1;transform:none}
+.fields li.on .tick{background:var(--ok);border-color:var(--ok)}
+.fields li.alarm.on .tick{background:var(--alarm);border-color:var(--alarm)}
+.label-foot{margin-top:12px;font-family:Inter,sans-serif;font-size:12.5px;color:var(--muted)}
+
+/* hero */
+.hero{padding:clamp(48px,7vw,96px) 0 clamp(40px,6vw,72px)}
+.hero h1{font-size:clamp(40px,5.6vw,72px);font-weight:700;letter-spacing:-.035em;line-height:1.02;max-width:12em}
+.hero p.lead{margin-top:22px;font-size:clamp(18px,1.7vw,21px);color:var(--muted);max-width:32em}
+.hero .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.hero-label{display:none;margin-top:36px;max-width:360px}
+@media (max-width:980px){.hero-label{display:block}}
+.hero-photo{margin-top:44px;border-radius:var(--r);overflow:hidden}
+.hero-photo img{width:100%;aspect-ratio:16/8;object-fit:cover;object-position:50% 35%}
+
+/* sections */
+.sec{padding:clamp(56px,7vw,96px) 0;border-top:1px solid var(--rule)}
+.sec h2{font-size:clamp(30px,3.4vw,44px);max-width:16em}
+.sec .intro{margin-top:16px;color:var(--muted);max-width:36em;font-size:18px}
+
+/* on your floor */
+.parts{margin-top:40px;display:grid;gap:28px}
+.part{display:grid;grid-template-columns:220px 1fr;gap:24px;align-items:center}
+.part img{width:220px;aspect-ratio:1/1;object-fit:cover;border-radius:var(--r);background:var(--mist)}
+.part h3{font-size:22px}
+.part p{margin-top:8px;color:var(--muted);max-width:34em}
+.tag{display:inline-block;font:600 12.5px/1 var(--mono);padding:6px 8px;border-radius:6px;margin-top:12px}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.alarm{background:var(--alarm-bg);color:var(--alarm)}
+@media (max-width:620px){.part{grid-template-columns:1fr}.part img{width:100%;aspect-ratio:16/10}}
+
+.alarm-tile{width:220px;aspect-ratio:1/1;border-radius:var(--r);background:#2E3A48;display:grid;place-items:center;align-content:center;gap:16px}
+.alarm-tile .lamp{width:56px;height:56px;border-radius:50%;background:var(--alarm);box-shadow:0 0 0 10px rgba(201,118,0,.25),0 0 40px 10px rgba(201,118,0,.45)}
+.alarm-tile .read{font:600 14px/1.4 var(--mono);color:#F6C27A;text-align:center;letter-spacing:.04em}
+@media (max-width:620px){.alarm-tile{width:100%;aspect-ratio:16/10}}
+/* audits */
+.shot{margin-top:36px;background:var(--mist);border-radius:var(--r);padding:clamp(16px,3vw,32px)}
+.shot img{border-radius:10px;width:100%}
+.points{margin:28px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.points li{border-top:2px solid var(--navy);padding-top:14px}
+.points b{display:block;color:var(--navy);font-size:17px}
+.points span{color:var(--muted);font-size:15.5px}
+@media (max-width:760px){.points{grid-template-columns:1fr}}
+
+/* price */
+.prices{margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.price{border:1.5px solid var(--rule);border-radius:var(--r);padding:24px}
+.price .what{font-weight:600;color:var(--navy)}
+.price .amt{margin-top:10px;font-size:40px;font-weight:700;color:var(--navy);letter-spacing:-.03em;line-height:1}
+.price .amt small{font-size:16px;font-weight:500;color:var(--muted);letter-spacing:0}
+.price ul{margin:16px 0 0;padding-left:18px;color:var(--muted)}
+.note{margin-top:16px;color:var(--muted);font-size:15.5px;max-width:40em}
+@media (max-width:620px){.prices{grid-template-columns:1fr}}
+
+/* setup steps: a real sequence */
+.steps{list-style:none;margin:36px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--mist);border-radius:var(--r);padding:20px}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--white);font:600 14px/1 var(--mono)}
+.steps h3{font-size:18px;margin-top:14px}
+.steps p{margin-top:6px;color:var(--muted);font-size:15.5px}
+@media (max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.steps{grid-template-columns:1fr}}
+
+/* faq */
+.faq{margin-top:28px;border-top:1px solid var(--rule)}
+.faq details{border-bottom:1px solid var(--rule)}
+.faq summary{list-style:none;cursor:pointer;padding:18px 36px 18px 0;font-weight:600;color:var(--navy);position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:14px;font-size:24px;font-weight:400;color:var(--muted)}
+.faq details[open] summary::after{content:"−"}
+.faq details p{padding:0 0 18px;color:var(--muted);max-width:40em}
+
+/* team */
+.people{margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.person{display:flex;gap:18px;align-items:center}
+.person img{width:84px;height:84px;border-radius:50%;object-fit:cover;object-position:50% 20%}
+.person b{display:block;color:var(--navy);font-size:17px}
+.person span{color:var(--muted);font-size:15px}
+@media (max-width:620px){.people{grid-template-columns:1fr}}
+
+/* contact */
+.contact{background:#1D2328;color:var(--white);padding:clamp(56px,8vw,104px) 0}
+.contact h2{color:var(--white);font-size:clamp(32px,4vw,52px);max-width:14em}
+.contact p{margin-top:16px;color:#C9CFD4;max-width:34em;font-size:18px}
+.contact .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.contact .btn.primary{background:#C8F031;color:#1D2328;border-color:#C8F031}
+.contact .btn.primary:hover{background:#D6F65C;border-color:#D6F65C}
+.contact .btn.line{color:var(--white);border-color:rgba(255,255,255,.6)}
+.contact .btn.line:hover{background:rgba(255,255,255,.08)}
+.contact .mails{margin-top:28px;display:grid;gap:6px;font-size:15.5px;color:#C9CFD4}
+.contact .mails a{color:var(--white);font-weight:600}
+
+footer{padding:24px 0;font-size:14px;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+footer img{height:24px;width:auto}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a href="#" aria-label="Panthoron home"><img src="assets/logo.png" alt="Panthoron"></a>
+    <nav aria-label="Main">
+      <a href="#floor">How it works</a>
+      <a href="#audits">Audits and recalls</a>
+      <a href="#price">Price</a>
+      <a href="#faq">Questions</a>
+      <a class="btn primary" href="#contact">Book a call</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap page">
+<main>
+
+  <section class="hero">
+    <h1>Trace any batch in one tap.</h1>
+    <p class="lead">Back to the milk, forward to the customer. Panthoron records every batch on your production floor as it is made, so you are ready for every audit and every recall.</p>
+    <div class="actions">
+      <a class="btn primary" href="#contact">Book a call</a>
+      <a class="btn line" href="#floor">See how it works</a>
+    </div>
+    <div class="hero-label" aria-hidden="true"></div>
+    <div class="hero-photo"><img src="assets/station.jpg" alt="Panthoron sensor station with its display and button"></div>
+  </section>
+
+  <section class="sec" id="floor" data-step="1">
+    <h2>What happens on your floor</h2>
+    <p class="intro">Your operators keep working the way they do now. The record is made at the line, as each batch is made.</p>
+    <div class="parts">
+      <div class="part" data-step="2">
+        <img src="assets/tablet-app.jpg" alt="">
+        <div><h3>Scan every raw material</h3><p>The operator scans each ingredient and packaging roll on a tablet at the line. The batch cannot start until every material is scanned. Nothing depends on memory.</p><span class="tag ok">Scanned · OK</span></div>
+      </div>
+      <div class="part" data-step="3">
+        <img src="assets/station.jpg" alt="">
+        <div><h3>Log the batch and its temperature</h3><p>A sealed sensor station sits by the tank. It logs each batch and its temperature automatically, in wet rooms too.</p><span class="tag ok">Vat 3 · 7 batches today</span></div>
+      </div>
+      <div class="part" data-step="4">
+        <div class="alarm-tile" aria-hidden="true"><span class="lamp"></span><span class="read">VAT 3<br>LIMIT CROSSED</span></div>
+        <div><h3>Raise an alarm on the spot</h3><p>You set the temperature limit. If it is crossed, the station flashes and sounds an alarm on the floor until someone presses its button.</p><span class="tag alarm">Limit crossed · Alarm</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="audits" data-step="5">
+    <h2>Audits and recalls in minutes</h2>
+    <p class="intro">Pick up any box. One tap shows its full history, backwards to the farms and forwards to the customers who received it.</p>
+    <div class="shot"><img src="assets/trace-report.jpg" alt="Trace report for a feta lot: farms, vat, packaging, packed cases and customers on one screen"></div>
+    <ul class="points">
+      <li><b>For the auditor</b><span>Export the full trace report for IFS, BRC or HACCP checks.</span></li>
+      <li><b>For a recall</b><span>Find only the batches at risk, and keep the safe food on sale.</span></li>
+      <li><b>For dairies</b><span>The ARTEMIS milk report is built in.</span></li>
+    </ul>
+  </section>
+
+  <section class="sec" id="price" data-step="6">
+    <h2>What it costs</h2>
+    <div class="prices">
+      <div class="price">
+        <div class="what">Hardware and setup</div>
+        <div class="amt">€7,000 <small>one time</small></div>
+        <ul><li>Sensor stations and tablets</li><li>Installation in your plant</li><li>Training for your team</li></ul>
+      </div>
+      <div class="price">
+        <div class="what">Software and support</div>
+        <div class="amt">€350 <small>a month</small></div>
+        <ul><li>The Panthoron app and trace reports</li><li>Cloud storage and updates</li><li>Support, and replacement of faulty stations</li></ul>
+      </div>
+    </div>
+    <p class="note">Greek and EU grants for going digital can help pay for the setup. We can put you in touch with consultants who help plants apply.</p>
+  </section>
+
+  <section class="sec" id="setup">
+    <h2>How setup works</h2>
+    <ol class="steps">
+      <li><h3>Site visit</h3><p>We walk your production line and map where each batch starts and ends.</p></li>
+      <li><h3>Installation</h3><p>Stations and tablets go in, about two weeks after your order.</p></li>
+      <li><h3>Training</h3><p>Your team learns on its own line, during a normal shift.</p></li>
+      <li><h3>Live</h3><p>Every batch is recorded from the first day.</p></li>
+    </ol>
+  </section>
+
+  <section class="sec" id="faq">
+    <h2>Questions owners ask</h2>
+    <div class="faq">
+      <details><summary>Will my staff really scan?</summary><p>They have to. The batch cannot start until every material is scanned, so the record exists before production begins. Scanning takes seconds at the line.</p></details>
+      <details><summary>Does it work with our ERP?</summary><p>Yes. Panthoron works with or without an ERP, and exports the batch data to it.</p></details>
+      <details><summary>What if the Wi-Fi drops?</summary><p>Scans are stored on the device and sync when the connection is back. Production does not stop.</p></details>
+      <details><summary>Can the stations go in wet rooms?</summary><p>Yes. The stations are sealed for wet rooms and cleaning.</p></details>
+      <details><summary>What if a station breaks?</summary><p>We replace a faulty station at no extra cost while you subscribe.</p></details>
+      <details><summary>Who owns our data?</summary><p>You do. Your data sits in an encrypted European cloud, and you can export all of it at any time.</p></details>
+      <details><summary>What kind of plants is it for?</summary><p>Small and medium food plants. We start with dairies in Greece, and also work with other plants such as bakeries.</p></details>
+    </div>
+  </section>
+
+  <section class="sec" id="team">
+    <h2>Who we are</h2>
+    <div class="people">
+      <div class="person"><img src="assets/leo.jpg" alt="Leonidas Mademlis"><div><b>Leonidas Mademlis</b><span>Product and installs. 28 years on the factory floor.</span></div></div>
+      <div class="person"><img src="assets/shirinda.jpg" alt="Shirinda Pulluru"><div><b>Shirinda Pulluru</b><span>Sales and partnerships. Has set up food businesses in more than 10 markets.</span></div></div>
+    </div>
+  </section>
+
+</main>
+
+<aside class="label-col" aria-hidden="true">
+  <div class="label" id="label">
+    <div class="label-top">
+      <div><div class="lot">LOT F-400-260914-03</div><div class="prod">Feta, 400 g</div></div>
+      <img src="assets/qr-panthoron.png" alt="">
+    </div>
+    <ol class="fields" id="fields">
+      <li data-at="1"><i class="tick"></i><span class="k">Milk in</span><span class="v">12 farms</span></li>
+      <li data-at="2"><i class="tick"></i><span class="k">Materials</span><span class="v">scanned</span></li>
+      <li data-at="3"><i class="tick"></i><span class="k">Vat</span><span class="v">3 · logged</span></li>
+      <li data-at="4" class="alarm"><i class="tick"></i><span class="k">Alarm</span><span class="v">cleared</span></li>
+      <li data-at="5"><i class="tick"></i><span class="k">Trace</span><span class="v">01:47</span></li>
+      <li data-at="6"><i class="tick"></i><span class="k">Shipped</span><span class="v">3 customers</span></li>
+    </ol>
+    <div class="label-foot">Demo data</div>
+  </div>
+</aside>
+</div>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <h2>Talk to us about your plant</h2>
+    <p>Tell us what you make and how you record batches today. We will tell you honestly whether Panthoron fits.</p>
+    <div class="actions">
+      <a class="btn primary" href="mailto:hello@panthoron.com?subject=Book%20a%20call%20about%20Panthoron">Book a call</a>
+      <a class="btn line" href="mailto:hello@panthoron.com?subject=Technical%20question%20about%20Panthoron">Ask a technical question</a>
+    </div>
+    <div class="mails">
+      <span>Email us: <a href="mailto:hello@panthoron.com">hello@panthoron.com</a></span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <img src="assets/logo.png" alt="Panthoron">
+    <span>© 2026 Panthoron. Intelligent traceability. Resilient food systems.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var fields=[].slice.call(document.querySelectorAll('#fields li'));
+  // mobile: copy the label into the hero, fully filled
+  var hl=document.querySelector('.hero-label'), lab=document.getElementById('label');
+  if(hl&&lab){var c=lab.cloneNode(true);c.removeAttribute('id');[].forEach.call(c.querySelectorAll('li'),function(li){li.classList.add('on')});hl.appendChild(c)}
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce||!('IntersectionObserver' in window)){fields.forEach(function(f){f.classList.add('on')});return}
+  var reached=0;
+  function fill(n){if(n<=reached)return;reached=n;fields.forEach(function(f){if(+f.dataset.at<=n)f.classList.add('on')})}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)fill(+e.target.dataset.step)})},{rootMargin:'0px 0px -45% 0px'});
+  [].forEach.call(document.querySelectorAll('[data-step]'),function(el){io.observe(el)});
+  setTimeout(function(){fill(1)},400);
+})();
+</script>
+</body>
+</html>
